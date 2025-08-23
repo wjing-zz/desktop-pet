@@ -1,0 +1,34 @@
+.cat-container {
+  position: fixed; /* 固定在窗口的某个位置 */
+  bottom: 20px;
+  right: 20px;
+  width: 150px; /* 设置小猫的尺寸 */
+  height: 150px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.cat {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 0.5s ease-in-out; /* 添加平滑的过渡效果 */
+}
+
+/* 简单的 CSS 动画 */
+@keyframes shake {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(5deg); }
+  50% { transform: rotate(0deg); }
+  75% { transform: rotate(-5deg); }
+}
+
+.cat:hover {
+  animation: shake 0.8s infinite;
+}
+
+.cat.sleeping {
+  opacity: 0.8;
+  filter: grayscale(80%);
+}
