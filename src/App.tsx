@@ -7,9 +7,8 @@ import Pet from "./components/pet.tsx"; // 导入小猫组件
 function App() {
 
   return (
-    <main className="container">
+    <main className="container" data-tauri-drag-region>
       {/* 可以在这里添加您的打字计数器和商城界面 */}
-      <h1>我的桌面宠物</h1>
       {/* 渲染小猫组件 */}
       <Pet />
     </main>
