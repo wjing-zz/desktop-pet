@@ -1,54 +1,77 @@
 import React, { useState, useEffect, useRef } from 'react';
-import catIdle from '../assets/frog.gif'; // 导入小猫默认图片
-import './pet.css'; // 导入 CSS 文件来控制动画和样式
+import catIdle from '../assets/frog.gif';
+import './pet.css';
 import { invoke } from '@tauri-apps/api/core';
 import { WebviewWindow } from "@tauri-apps/api/WebviewWindow";
+// 1. 从配置文件导入时间设置
+import { REMINDER_INTERVAL_MS, REMINDER_VISIBLE_DURATION_MS } from '../config.ts';
 
 function Pet() {
   const petRef = useRef<HTMLDivElement>(null);
-  const [currentImage, setCurrentImage] = useState(catIdle); // 默认图片
-  const [isAwake, setIsAwake] = useState(true); // 初始状态为清醒
+  const [currentImage, setCurrentImage] = useState(catIdle);
+  const [isAwake, setIsAwake] = useState(true);
 
-  // // 模拟小猫眨眼或做一些小动作
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     // 在这里可以添加更多逻辑来切换图片，比如眨眼
-  //     // 为了简单起见，我们先保持一张图
-  //   }, 5000); // 每隔5秒检查一次
-  //   return () => clearInterval(interval);
-  // }, []);
+  // 状态：控制气泡是否显示
+  const [showBubble, setShowBubble] = useState(false);
+  // 状态：控制气泡里的文字内容
+  const [bubbleMessage, setBubbleMessage] = useState('');
 
-  // // 处理右键点击事件
-  // const handleContextMenu = (event: any) => {
-  //   event.preventDefault(); // 阻止浏览器默认的右键菜单
-  //   invoke('show_context_menu'); // 调用后端 show_context_menu 函数
-  // };
-
-  // const [isDragging, setIsDragging] = useState(false);
-
+  // --- 修正后的拖拽功能 ---
   useEffect(() => {
-    const handleMouseDown = async (event: MouseEvent) => {
+    const el = petRef.current;
+
+    const handleMouseDown = (event: MouseEvent) => {
+      // 仅当鼠标左键按下时触发拖拽
       if (event.button === 0) {
-        await WebviewWindow.getCurrent().startDragging();
+        WebviewWindow.getCurrent().startDragging();
       }
-
-      const el = petRef.current;
-
-      if(el) {
-        el.addEventListener("mousedown", handleMouseDown);
-      }
-
-      return () => {
-        if (el) {
-          el.removeEventListener("mousedown", handleMouseDown);
-        }
-      };
     };
-  }, []);
+
+    // 为宠物容器添加事件监听
+    el?.addEventListener("mousedown", handleMouseDown);
+
+    // 组件卸载时，务必移除事件监听
+    return () => {
+      el?.removeEventListener("mousedown", handleMouseDown);
+    };
+  }, []); // 空依赖数组确保此 effect 只运行一次
+
+  // --- 新增的提醒功能 ---
+  useEffect(() => {
+    // 设置一个定时器，在指定延迟后触发提醒
+    const mainTimer = setInterval(() => {
+      setBubbleMessage('该休息眼睛了！');
+      setShowBubble(true);
+
+      // 设置另一个定时器，用于自动隐藏气泡
+      const hideTimer = setTimeout(() => {
+        setShowBubble(false);
+      }, REMINDER_VISIBLE_DURATION_MS); // 使用配置的显示时长
+
+      // 清理函数，以防在气泡显示期间组件被卸载
+      return () => clearTimeout(hideTimer);
+    }, REMINDER_INTERVAL_MS); // 使用配置的提醒间隔
+
+    // 组件卸载时，清除主定时器
+    return () => {
+      clearInterval(mainTimer);
+    };
+  }, []); // 空依赖数组确保此 effect 只运行一次
 
   return (
     <div className="cat-container" ref={petRef}>
-      <img src={currentImage} alt="小猫" className={`cat ${!isAwake ? 'sleeping' : ''}`}/>
+      {/* 条件渲染提示气泡 */}
+      {showBubble && (
+        <div className="speech-bubble">
+          {bubbleMessage}
+        </div>
+      )}
+
+      <img
+        src={currentImage}
+        alt="小猫"
+        className={`cat ${!isAwake ? 'sleeping' : ''}`}
+      />
     </div>
   );
 };
