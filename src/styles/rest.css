@@ -9,6 +9,14 @@
 
 * {
   margin: 0;
+    /* 标准语法，禁止用户选中文本或元素 */
+  user-select: none;
+
+  /* 针对不同浏览器内核的兼容性前缀 */
+  -webkit-user-select: none; /* Safari, Chrome, Opera */
+  -moz-user-select: none;    /* Firefox */
+  -ms-user-select: none;     /* Internet Explorer/Edge */
+
 }
 
 @media (prefers-reduced-motion: no-preference) {

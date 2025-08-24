@@ -17,11 +17,12 @@
         "fullscreen": false,
         "width": 150,
         "height": 150,
-        "resizable": true,
+        "resizable": false,
         "decorations": false, 
         "transparent": true, 
         "alwaysOnTop": true, 
-        "visible": true
+        "visible": true,
+        "maximizable": false
       }
     ],
     "security": {
