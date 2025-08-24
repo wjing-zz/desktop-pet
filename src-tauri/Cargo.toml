@@ -23,3 +23,13 @@ tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
+# --- 新增：为特定平台添加依赖 ---
+
+# 只在编译目标是 macOS 时，才包含这两个依赖
+[target.'cfg(target_os = "macos")'.dependencies]
+cocoa = "0.25"
+objc = "0.2"
+
+# 只在编译目标是 Windows 时，才包含这个依赖
+[target.'cfg(target_os = "windows")'.dependencies]
+windows-sys = { version = "0.52", features = ["Win32_UI_WindowsAndMessaging"] }

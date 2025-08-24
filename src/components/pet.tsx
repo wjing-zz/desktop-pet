@@ -38,6 +38,7 @@ function Pet() {
       // notificationSound.play().catch(error => {
       //   console.error("音频播放失败:", error);
       // });
+      invoke('play_native_sound', { soundName: 'Basso' });
 
       // 设置另一个定时器，用于自动隐藏气泡
       setTimeout(() => {
