@@ -98,11 +98,12 @@ fn main() {
                             "settings",
                             // Use the WebviewUrl::App variant for internal pages.
                             // The .into() converts the string into the required path type.
-                            tauri::WebviewUrl::App("index.html#settings".into()),
+                            tauri::WebviewUrl::App("index.html#/settings".into()),
                         )
                         .title("Reminder Settings")
-                        .inner_size(300.0, 200.0)
-                        .resizable(false)
+                        .devtools(true)
+                        // .inner_size(300.0, 200.0)
+                        // .resizable(false)
                         .always_on_top(true)
                         .build()
                         .unwrap();

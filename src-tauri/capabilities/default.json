@@ -1,14 +1,16 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Capability for the main window",
+  "description": "Capability for the main and settings windows",
   "windows": [
-    "main"
+    "main",
+    "settings"
   ],
   "permissions": [
     "core:default",
     "opener:default",
     "core:window:allow-start-dragging",
-    "store:default"
+    "store:default",
+    "core:window:allow-close"
   ]
 }
