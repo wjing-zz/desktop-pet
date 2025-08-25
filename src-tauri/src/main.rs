@@ -1,4 +1,3 @@
-
 // // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 // #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
@@ -8,8 +7,8 @@
 
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(
-  all(not(debug_assertions), target_os = "windows"),
-  windows_subsystem = "windows"
+    all(not(debug_assertions), target_os = "windows"),
+    windows_subsystem = "windows"
 )]
 
 use tauri::{
@@ -23,7 +22,7 @@ use tauri::{
 #[cfg(target_os = "macos")]
 #[tauri::command]
 fn play_native_sound(sound_name: String) {
-    use cocoa::base::{nil, id};
+    use cocoa::base::{id, nil};
     use cocoa::foundation::NSString;
     use objc::{msg_send, sel, sel_impl};
 
@@ -42,7 +41,7 @@ fn play_native_sound(sound_name: String) {
 fn play_native_sound(_sound_name: String) {
     // sound_name 参数在Windows上被忽略，因为我们播放的是默认系统声音
     use windows_sys::Win32::UI::WindowsAndMessaging::MessageBeep;
-    
+
     // 播放与 "OK" 按钮关联的默认系统声音
     const MB_OK: u32 = 0x00000000;
     unsafe {
@@ -58,9 +57,9 @@ fn play_native_sound(_sound_name: String) {
     println!("Native sound playback is not implemented for this OS.");
 }
 
-
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_store::Builder::new().build())
         .invoke_handler(tauri::generate_handler![play_native_sound])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
