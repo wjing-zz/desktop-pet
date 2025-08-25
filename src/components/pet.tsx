@@ -4,6 +4,12 @@ import './pet.css';
 import { invoke } from '@tauri-apps/api/core';
 import { WebviewWindow } from "@tauri-apps/api/WebviewWindow";
 import { REMINDER_INTERVAL_MS, REMINDER_VISIBLE_DURATION_MS } from '../config.ts';
+import { load } from '@tauri-apps/plugin-store';
+
+const store = await load('store.json');
+await store.set('reminder_setting', { value: 1 * 20 * 1000 });
+const stored = await store.get<{ value: number }>('reminder_setting');
+const interval_ms = stored?.value ?? REMINDER_INTERVAL_MS;
 
 function Pet() {
   const petRef = useRef<HTMLDivElement>(null);
@@ -45,7 +51,7 @@ function Pet() {
         setShowBubble(false);
       }, REMINDER_VISIBLE_DURATION_MS); // 使用配置的显示时长
 
-    }, REMINDER_INTERVAL_MS); // 使用配置的提醒间隔
+    }, interval_ms); // 使用配置的提醒间隔
 
     // 组件卸载时，必须清除定时器，防止内存泄漏
     return () => {
