@@ -13,6 +13,8 @@
     "macOSPrivateApi": true,
     "windows": [
       {
+        "label": "main",
+        "url": "index.html",
         "title": "tauri-pet",
         "fullscreen": false,
         "width": 150,

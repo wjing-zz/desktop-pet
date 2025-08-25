@@ -1,6 +1,4 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import { invoke } from "@tauri-apps/api/core";
+
 import "./App.css";
 import Pet from "./components/pet.tsx"; // 导入小猫组件
 
@@ -16,3 +14,19 @@ function App() {
 }
 
 export default App;
+
+// import { HashRouter, Routes, Route } from 'react-router-dom';
+// import Pet from './components/pet';
+// import Settings from './components/Settings';
+
+// function App() {
+//   return (
+//     <HashRouter>
+//       <Routes>
+//         <Route path="/" element={<main className="container" data-tauri-drag-region><Pet /></main>} />
+//         <Route path="/settings" element={<Settings />} />
+//       </Routes>
+//     </HashRouter>
+//   );
+// }
+// export default App;
