@@ -7,8 +7,8 @@ import { REMINDER_INTERVAL_MS, REMINDER_VISIBLE_DURATION_MS } from '../config.ts
 import { load } from '@tauri-apps/plugin-store';
 
 const store = await load('store.json');
-await store.set('reminder_setting', { value: 1 * 20 * 1000 });
-const stored = await store.get<{ value: number }>('reminder_setting');
+await store.set('reminderIntervalMinutes', { value: 1 * 20 * 1000 });
+const stored = await store.get<{ value: number }>('reminderIntervalMinutes');
 const interval_ms = stored?.value ?? REMINDER_INTERVAL_MS;
 
 function Pet() {

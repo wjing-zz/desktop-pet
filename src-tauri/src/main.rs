@@ -11,10 +11,8 @@
     windows_subsystem = "windows"
 )]
 
-use tauri::{
-    menu::{AboutMetadata, MenuBuilder, MenuItemBuilder, SubmenuBuilder},
-    Manager,
-};
+use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu};
+use tauri::{AppHandle, Manager, Runtime, WebviewWindowBuilder};
 
 // --- 跨平台的原生音效指令 ---
 
@@ -60,6 +58,59 @@ fn play_native_sound(_sound_name: String) {
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::new().build())
+         .setup(|app| {
+            let handle = app.handle();
+            
+            let menu = Menu::with_items(
+                handle,
+                &[
+                    &PredefinedMenuItem::about(handle, Some("About Tauri Pet"), None)?,
+                    &Submenu::with_items(
+                        handle,
+                        "File",
+                        true,
+                        &[&MenuItem::with_id(handle, "quit", "Quit", true, None::<&str>)?],
+                    )?,
+                    &Submenu::with_items(
+                        handle,
+                        "Settings",
+                        true,
+                        &[&MenuItem::with_id(handle, "settings", "Change Reminder Time...", true, None::<&str>)?],
+                    )?,
+                ],
+            )?;
+
+            app.set_menu(menu)?;
+            Ok(())
+        })
+        .on_menu_event(|app, event| {
+            match event.id().as_ref() {
+                "quit" => {
+                    app.exit(0);
+                }
+                "settings" => {
+                    if let Some(settings_window) = app.get_webview_window("settings") {
+                        settings_window.set_focus().unwrap();
+                    } else {
+                        // --- THIS IS THE CORRECTED PART ---
+                        WebviewWindowBuilder::new(
+                            app,
+                            "settings",
+                            // Use the WebviewUrl::App variant for internal pages.
+                            // The .into() converts the string into the required path type.
+                            tauri::WebviewUrl::App("index.html#settings".into()),
+                        )
+                        .title("Reminder Settings")
+                        .inner_size(300.0, 200.0)
+                        .resizable(false)
+                        .always_on_top(true)
+                        .build()
+                        .unwrap();
+                    }
+                }
+                _ => {}
+            }
+        })
         .invoke_handler(tauri::generate_handler![play_native_sound])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

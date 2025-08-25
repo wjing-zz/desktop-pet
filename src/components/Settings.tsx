@@ -24,7 +24,7 @@ function Settings() {
   // 保存设置
   const handleSave = async () => {
     if (typeof minutes === 'number' && minutes > 0) {
-      await store.set('reminderIntervalMinutes', minutes);
+      await store.set('reminderIntervalMinutes', minutes*60*1000);
       await store.save(); // 确保写入磁盘
 
       // 发出一个全局事件，通知主窗口设置已变更
