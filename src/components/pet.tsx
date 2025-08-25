@@ -1,15 +1,11 @@
-import React, { useState, useEffect, useRef} from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import catIdle from '../assets/frog.gif';
 import './pet.css';
 import { invoke } from '@tauri-apps/api/core';
 import { WebviewWindow } from "@tauri-apps/api/WebviewWindow";
 import { REMINDER_INTERVAL_MS, REMINDER_VISIBLE_DURATION_MS } from '../config.ts';
 import { load } from '@tauri-apps/plugin-store';
-
-const store = await load('store.json');
-await store.set('reminderIntervalMinutes', { value: 1 * 20 * 1000 });
-const stored = await store.get<{ value: number }>('reminderIntervalMinutes');
-const interval_ms = stored?.value ?? REMINDER_INTERVAL_MS;
+import { listen } from '@tauri-apps/api/event';
 
 function Pet() {
   const petRef = useRef<HTMLDivElement>(null);
@@ -19,7 +15,36 @@ function Pet() {
   const [showBubble, setShowBubble] = useState(false);
   const [bubbleMessage, setBubbleMessage] = useState('');
 
-  // const notificationSound = useMemo(() => new Audio('/notification.mp3'), []);
+  const [interval_ms, setIntervalMs] = useState(REMINDER_INTERVAL_MS);
+
+  // 组件加载时从 store 加载设置，并监听设置变化
+  useEffect(() => {
+    const setupInterval = async () => {
+      try {
+        const store = await load('store.json');
+        const stored = await store.get<{ value: number }>('reminderIntervalMinutes');
+        if (stored && typeof stored.value === 'number') {
+          setIntervalMs(stored.value);
+        }
+      } catch (error) {
+        console.error("Failed to load settings:", error);
+      }
+    };
+
+    setupInterval();
+
+    const unlistenPromise = listen('settings-changed', (event) => {
+      const payload = event.payload as { newInterval?: number };
+      if (payload && typeof payload.newInterval === 'number') {
+        setIntervalMs(payload.newInterval);
+      }
+    });
+
+    return () => {
+      unlistenPromise.then(unlisten => unlisten());
+    };
+  }, []);
+
 
   // 拖拽功能 (无需改动)
   useEffect(() => {
@@ -37,13 +62,12 @@ function Pet() {
 
   // --- 更新后的重复提醒功能 ---
   useEffect(() => {
+    if (interval_ms <= 0) return; // 防止间隔为0或负数
+
     // 设置一个定时器，每隔一段时间触发提醒
     const intervalId = setInterval(() => {
       setBubbleMessage('该休息眼睛了！');
       setShowBubble(true);
-      // notificationSound.play().catch(error => {
-      //   console.error("音频播放失败:", error);
-      // });
       invoke('play_native_sound', { soundName: 'Basso' });
 
       // 设置另一个定时器，用于自动隐藏气泡
@@ -57,7 +81,7 @@ function Pet() {
     return () => {
       clearInterval(intervalId);
     };
-  }, []); 
+  }, [interval_ms]); // 当 interval_ms 变化时，重新设置定时器
 
   return (
     <div className="cat-container" ref={petRef}>
