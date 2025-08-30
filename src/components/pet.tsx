@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import catIdle from '../assets/frog.gif';
+import happyFrog from '../assets/happyfrog.gif'; // 导入新图片
 import './pet.css';
 import { invoke } from '@tauri-apps/api/core';
 import { WebviewWindow } from "@tauri-apps/api/WebviewWindow";
@@ -17,7 +18,7 @@ function Pet() {
 
   const [interval_ms, setIntervalMs] = useState(REMINDER_INTERVAL_MS);
 
-  // 组件加载时从 store 加载设置，并监听设置变化
+  // 加载和监听设置 (不变)
   useEffect(() => {
     const setupInterval = async () => {
       try {
@@ -33,20 +34,27 @@ function Pet() {
 
     setupInterval();
 
-    const unlistenPromise = listen('settings-changed', (event) => {
+    const unlistenSettings = listen('settings-changed', (event) => {
       const payload = event.payload as { newInterval?: number };
       if (payload && typeof payload.newInterval === 'number') {
         setIntervalMs(payload.newInterval);
       }
     });
 
+    // 新增：监听来自菜单的 'next_gif' 事件
+    const unlistenNextGif = listen('next_gif', () => {
+        setCurrentImage(prevImage => (prevImage === catIdle ? happyFrog : catIdle));
+    });
+
     return () => {
-      unlistenPromise.then(unlisten => unlisten());
+      // 组件卸载时，清理所有监听器
+      unlistenSettings.then(unlisten => unlisten());
+      unlistenNextGif.then(unlisten => unlisten());
     };
-  }, []);
+  }, []); 
 
 
-  // 拖拽功能 (无需改动)
+  // 拖拽功能 (不变)
   useEffect(() => {
     const el = petRef.current;
     const handleMouseDown = (event: MouseEvent) => {
@@ -60,28 +68,25 @@ function Pet() {
     };
   }, []);
 
-  // --- 更新后的重复提醒功能 ---
+  // 提醒功能 (不变)
   useEffect(() => {
-    if (interval_ms <= 0) return; // 防止间隔为0或负数
+    if (interval_ms <= 0) return;
 
-    // 设置一个定时器，每隔一段时间触发提醒
     const intervalId = setInterval(() => {
       setBubbleMessage('该休息眼睛了！');
       setShowBubble(true);
       invoke('play_native_sound', { soundName: 'Basso' });
-
-      // 设置另一个定时器，用于自动隐藏气泡
+      
       setTimeout(() => {
         setShowBubble(false);
-      }, REMINDER_VISIBLE_DURATION_MS); // 使用配置的显示时长
+      }, REMINDER_VISIBLE_DURATION_MS);
 
-    }, interval_ms); // 使用配置的提醒间隔
+    }, interval_ms);
 
-    // 组件卸载时，必须清除定时器，防止内存泄漏
     return () => {
       clearInterval(intervalId);
     };
-  }, [interval_ms]); // 当 interval_ms 变化时，重新设置定时器
+  }, [interval_ms]); 
 
   return (
     <div className="cat-container" ref={petRef}>
