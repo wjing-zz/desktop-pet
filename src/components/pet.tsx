@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import catIdle from '../assets/frog.gif';
-import happyFrog from '../assets/happyfrog.gif'; // 导入新图片
+import happyFrog from '../assets/happyfrog.gif';
+import workingFrog from '../assets/workingfrog.gif'; // 1. 导入新的 workingfrog 图片
 import './pet.css';
 import { invoke } from '@tauri-apps/api/core';
 import { WebviewWindow } from "@tauri-apps/api/WebviewWindow";
 import { REMINDER_INTERVAL_MS, REMINDER_VISIBLE_DURATION_MS } from '../config.ts';
 import { load } from '@tauri-apps/plugin-store';
 import { listen } from '@tauri-apps/api/event';
+
+// 2. 将所有 GIF 图片放入一个数组中，方便管理
+const gifs = [catIdle, happyFrog, workingFrog];
 
 function Pet() {
   const petRef = useRef<HTMLDivElement>(null);
@@ -18,7 +22,7 @@ function Pet() {
 
   const [interval_ms, setIntervalMs] = useState(REMINDER_INTERVAL_MS);
 
-  // 加载和监听设置 (不变)
+  // 加载和监听设置
   useEffect(() => {
     const setupInterval = async () => {
       try {
@@ -41,13 +45,16 @@ function Pet() {
       }
     });
 
-    // 新增：监听来自菜单的 'next_gif' 事件
+    // 3. 更新 'next_gif' 事件的监听逻辑
     const unlistenNextGif = listen('next_gif', () => {
-        setCurrentImage(prevImage => (prevImage === catIdle ? happyFrog : catIdle));
+        setCurrentImage(prevImage => {
+            const currentIndex = gifs.indexOf(prevImage);
+            const nextIndex = (currentIndex + 1) % gifs.length; // 循环到下一个索引
+            return gifs[nextIndex];
+        });
     });
 
     return () => {
-      // 组件卸载时，清理所有监听器
       unlistenSettings.then(unlisten => unlisten());
       unlistenNextGif.then(unlisten => unlisten());
     };
